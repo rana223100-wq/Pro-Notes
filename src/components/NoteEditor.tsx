@@ -1,36 +1,7 @@
 
 /* AUTO-SAVE ENHANCED V3 */
 import { useEffect, useRef, useState, useCallback } from 'react';
-import {
-  ArrowLeft,
-  Star,
-  Pin,
-  MoreVertical,
-  Redo2,
-  Undo2,
-  Bold,
-  Italic,
-  Underline,
-  Palette,
-  Type as TypeIcon,
-  List,
-  ListOrdered,
-  Image as ImageIcon,
-  Film,
-  File as FileIcon,
-  Trash2,
-  Copy,
-  Share2,
-  BarChart3,
-  Lock as LockIcon,
-  FolderLock,
-  Minus,
-  Plus,
-  Move,
-  Maximize2,
-  Eye,
-  EyeOff,
-} from 'lucide-react';
+import { ArrowLeft, Star, Pin, MoveVertical as MoreVertical, Redo2, Undo2, Bold, Italic, Underline, Palette, Type as TypeIcon, List, ListOrdered, Image as ImageIcon, Film, File as FileIcon, Trash2, Copy, Share2, ChartBar as BarChart3, Lock as LockIcon, FolderLock, Minus, Plus, Move, Maximize2, Eye, EyeOff } from 'lucide-react';
 
 import { App } from '@capacitor/app';
 
@@ -146,6 +117,10 @@ export function NoteEditor({
   const latestContentRef = useRef(note.content);
   const latestNoteIdRef = useRef(note.id);
 
+  // Refs so the back-button listener always calls the latest handler
+  const handleBackRef = useRef<() => void>(() => {});
+  const saveCurrentRef = useRef<() => void>(() => {});
+
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -220,12 +195,12 @@ export function NoteEditor({
 
   useEffect(() => {
     const backHandler = App.addListener('backButton', () => {
-      handleBack();
+      handleBackRef.current();
     });
 
     const stateHandler = App.addListener('appStateChange', ({ isActive }) => {
       if (!isActive) {
-        saveCurrent();
+        saveCurrentRef.current();
       }
     });
 
@@ -323,6 +298,8 @@ export function NoteEditor({
     }, 500);
   }, [saveCurrent]);
 
+  saveCurrentRef.current = saveCurrent;
+
   const onEditorInput = useCallback(() => {
     const html = editorRef.current?.innerHTML || '';
     latestContentRef.current = html;
@@ -349,6 +326,8 @@ export function NoteEditor({
 
     onBack();
   }, [onSaveContent, note.id, onDelete, onBack]);
+
+  handleBackRef.current = handleBack;
 
   const undo = useCallback(() => {
     const stack = undoStackRef.current;

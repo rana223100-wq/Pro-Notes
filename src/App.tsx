@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 
 import { Splash } from '@/components/Splash';
@@ -93,12 +93,15 @@ function AppInner() {
   /*
    * Android Back button / system back gesture.
    *
-   * If we are anywhere other than Home:
-   *     -> go Home
-   *
-   * If we are already on Home:
-   *     -> allow Android to close the app.
+   * A ref holds the latest handler so the listener (registered once) always
+   * calls the current version and never sees stale state.
    */
+  const handleBackRef = useRef(handleBack);
+  handleBackRef.current = handleBack;
+
+  const screenRef = useRef(screen);
+  screenRef.current = screen;
+
   useEffect(() => {
     let backListener: { remove: () => void } | null = null;
 
@@ -108,9 +111,9 @@ function AppInner() {
         () => {
           // If in editor, let NoteEditor handle its own hardware back button
           // to ensure saving logic runs before screen navigation occurs.
-          if (screen === 'editor') return;
+          if (screenRef.current === 'editor') return;
 
-          handleBack();
+          handleBackRef.current();
         }
       );
     };
@@ -122,7 +125,7 @@ function AppInner() {
         backListener.remove();
       }
     };
-  }, [screen]);
+  }, []);
 
   return (
     <div
