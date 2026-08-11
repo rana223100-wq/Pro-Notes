@@ -2466,7 +2466,8 @@ function FullscreenAttachment({
       {/* CLOSE */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 z-20 w-11 h-11 rounded-full bg-white/15 text-white flex items-center justify-center text-2xl backdrop-blur"
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute top-4 right-4 z-20 w-11 h-11 rounded-full bg-white/15 text-white flex items-center justify-center text-2xl backdrop-blur active:scale-90 transition-transform"
         type="button"
       >
         ×
@@ -2475,7 +2476,8 @@ function FullscreenAttachment({
       {/* RESET */}
       <button
         onClick={resetView}
-        className="absolute top-4 left-4 z-20 px-4 py-2 rounded-full bg-white/15 text-white text-sm backdrop-blur"
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute top-4 left-4 z-20 px-4 py-2 rounded-full bg-white/15 text-white text-sm backdrop-blur active:scale-90 transition-transform"
         type="button"
       >
         Reset
@@ -2517,7 +2519,10 @@ function FullscreenAttachment({
       </div>
 
       {/* ZOOM BUTTONS */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 p-1.5 rounded-full bg-white/15 backdrop-blur">
+      <div
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 p-1.5 rounded-full bg-white/15 backdrop-blur"
+      >
         <button
           onClick={() =>
             setScale((s) =>
