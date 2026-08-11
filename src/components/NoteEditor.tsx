@@ -5,6 +5,8 @@ import { ArrowLeft, Star, Pin, MoveVertical as MoreVertical, Redo2, Undo2, Bold,
 
 import { App } from '@capacitor/app';
 
+import { openFileAttachment } from '@/lib/openFile';
+
 import type { Note, Category, NoteAttachment } from '@/types';
 
 import {
@@ -1000,6 +1002,12 @@ export function NoteEditor({
                     onStopMove={
                       stopAttachmentMove
                     }
+                    onOpenFile={() =>
+                      openFileAttachment(
+                        attachment.name,
+                        attachment.dataUrl,
+                      )
+                    }
                   />
                 );
               })}
@@ -1333,9 +1341,9 @@ export function NoteEditor({
                 activeAttachment,
               );
             } else {
-              window.open(
+              openFileAttachment(
+                activeAttachment.name,
                 activeAttachment.dataUrl,
-                '_blank',
               );
             }
           }}
@@ -1819,6 +1827,7 @@ function AttachmentView({
   onStartMove,
   onMove,
   onStopMove,
+  onOpenFile,
 }: {
   att: AttachmentWithPosition;
   selected: boolean;
@@ -1831,6 +1840,7 @@ function AttachmentView({
     e: React.PointerEvent,
   ) => void;
   onStopMove: () => void;
+  onOpenFile: () => void;
 }) {
   const x = att.x || 0;
   const y = att.y || 0;
@@ -1859,13 +1869,14 @@ function AttachmentView({
   if (att.kind === 'file') {
     return (
       <div
-        className={`inline-flex items-center gap-3 px-4 py-3 rounded-xl border border-app surface-soft ${
+        className={`inline-flex items-center gap-3 px-4 py-3 rounded-xl border border-app surface-soft cursor-pointer ${
           selected
             ? 'ring-2 ring-blue-500'
             : ''
         }`}
         style={style}
         onClick={onSelect}
+        onDoubleClick={onOpenFile}
         onPointerDown={
           onStartMove
         }
@@ -2170,17 +2181,22 @@ function AttachmentToolbar({
         )}
       </button>
 
-      {(att.kind === 'image' ||
-        att.kind === 'video') && (
-        <button
-          onClick={onFullscreen}
-          className="p-2 rounded-lg hover:bg-black/5 text-main"
-          title="Fullscreen"
-          type="button"
-        >
+      <button
+        onClick={onFullscreen}
+        className="p-2 rounded-lg hover:bg-black/5 text-main"
+        title={
+          att.kind === 'file'
+            ? 'Open file'
+            : 'Fullscreen'
+        }
+        type="button"
+      >
+        {att.kind === 'file' ? (
+          <Share2 size={17} />
+        ) : (
           <Maximize2 size={17} />
-        </button>
-      )}
+        )}
+      </button>
 
       <span
         className="w-px h-5"
