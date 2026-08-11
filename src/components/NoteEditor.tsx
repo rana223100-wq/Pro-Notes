@@ -661,23 +661,32 @@ export function NoteEditor({
     const text = htmlToPlain(
       editorRef.current?.innerHTML || '',
     );
-
+    const fullText = `${title || 'Pro Note'}\n\n${text}`;
     const shareData: ShareData = {
       title: title || 'Pro Note',
-      text,
+      text: fullText,
+    };
+
+    const fallbackCopy = async () => {
+      try {
+        await navigator.clipboard.writeText(fullText);
+        showToast('Copied to clipboard');
+      } catch {
+        showToast('Could not share or copy');
+      }
     };
 
     try {
       if (navigator.share) {
         await navigator.share(shareData);
+        showToast('Note shared');
       } else {
-        await navigator.clipboard.writeText(text);
-        showToast(
-          'Sharing not supported; copied text instead',
-        );
+        await fallbackCopy();
       }
-    } catch {
-      // cancelled
+    } catch (err) {
+      const name = (err as Error)?.name;
+      if (name === 'AbortError') return;
+      await fallbackCopy();
     }
 
     setMenuOpen(false);
