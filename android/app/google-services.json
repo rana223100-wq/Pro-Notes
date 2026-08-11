@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1022946497893",
+    "project_id": "rana-smart-notes",
+    "storage_bucket": "rana-smart-notes.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1022946497893:android:98dc2f0a4faf0f49eebd8c",
+        "android_client_info": {
+          "package_name": "com.pro.notes"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1022946497893-265s9sehm2nkc9q993mruq2dd9hmg0gu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pro.notes",
+            "certificate_hash": "2692b41dba7e4a5df337d5b6eddc1eaafd45c613"
+          }
+        },
+        {
+          "client_id": "1022946497893-ou2p4secq8cm19h3ttg0gsc3qhbumurf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNXfHnRN4l-i5N3OkvIcSZb0tNwtNo9vY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1022946497893-ou2p4secq8cm19h3ttg0gsc3qhbumurf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

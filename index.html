@@ -1,0 +1,57 @@
+
+package com.pro.notes;
+
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.webkit.WebView;
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onBackPressed() {
+        clickHiddenSaveButton();
+        
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                MainActivity.super.onBackPressed();
+            }
+        }, 300); 
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        clickHiddenSaveButton();
+    }
+
+    private void clickHiddenSaveButton() {
+        try {
+            WebView webView = this.getBridge().getWebView();
+            if (webView != null) {
+                String jsCode = 
+                    "try {" +
+                    "   var btns = document.querySelectorAll('button');" +
+                    "   for(var i=0; i<btns.length; i++) {" +
+                    "       var txt = btns[i].innerText.toLowerCase();" +
+                    "       if(txt.includes('save') || txt.includes('done') || txt.includes('✓')) {" +
+                    "           btns[i].click();" +
+                    "           break;" +
+                    "       }" +
+                    "   }" +
+                    "} catch(e) {}";
+                        
+                webView.evaluateJavascript(jsCode, null);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
