@@ -1,204 +1,83 @@
-
-import { useEffect, useRef, useState } from 'react';
-import { App as CapacitorApp } from '@capacitor/app';
-
-import { Splash } from '@/components/Splash';
-import { Home } from '@/components/Home';
-import { NoteEditor } from '@/components/NoteEditor';
-import { LockFolder } from '@/components/LockFolder';
-import { Trash } from '@/components/Trash';
-import { Account } from '@/components/Account';
-import { LockedNoteGuard } from '@/components/LockedNoteGuard';
-import { NotesProvider, useNotes } from '@/store/NotesContext';
-import type { Category, Filter } from '@/types';
-
-type Screen = 'home' | 'editor' | 'lock' | 'trash' | 'account';
-
-function AppInner() {
-  const {
-    notes,
-    saveContent,
-    updateNote,
-    deleteNote,
-    moveToLockFolder,
-  } = useNotes();
-
-  const [screen, setScreen] = useState<Screen>('home');
-  const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
-  const [unlockedNote, setUnlockedNote] = useState(false);
-  const [lockAuthed, setLockAuthed] = useState(false);
-
-  // Navigation Stack State
-  const [filter, setFilter] = useState<Filter>('All');
-  const [category, setCategory] = useState<Category>('All');
-  const [prevScreen, setPrevScreen] = useState<Screen | null>(null);
-
-  const activeNote =
-    notes.find((n) => n.id === activeNoteId) ?? null;
-
-  /*
-   * Open a note.
-   *
-   * No matter where the note was opened from, pressing Back
-   * from the note will now return to Home.
-   */
-  const openNote = (id: string) => {
-    setPrevScreen(screen);
-    setActiveNoteId(id);
-    setUnlockedNote(false);
-    setScreen('editor');
-  };
-
-  /*
-   * Handle Back Navigation logic
-   */
-  const handleBack = () => {
-    if (screen === 'editor') {
-      setActiveNoteId(null);
-      setUnlockedNote(false);
-      setScreen(prevScreen || 'home');
-      return;
-    }
-
-    if (screen === 'lock' || screen === 'trash' || screen === 'account') {
-      if (screen === 'lock') {
-        // Reset Lock Folder authentication when leaving the screen
-        setLockAuthed(false);
-      }
-      setScreen('home');
-      setFilter('All');
-      return;
-    }
-
-    if (screen === 'home') {
-      if (filter !== 'All' || category !== 'All') {
-        setFilter('All');
-        setCategory('All');
-        return;
-      }
-    }
-
-    // If we are at Home with no filters, exit
-    CapacitorApp.exitApp();
-  };
-
-  const goHome = () => {
-    setActiveNoteId(null);
-    setUnlockedNote(false);
-    setScreen('home');
-    setFilter('All');
-    setCategory('All');
-  };
-
-  /*
-   * Android Back button / system back gesture.
-   *
-   * A ref holds the latest handler so the listener (registered once) always
-   * calls the current version and never sees stale state.
-   */
-  const handleBackRef = useRef(handleBack);
-  handleBackRef.current = handleBack;
-
-  const screenRef = useRef(screen);
-  screenRef.current = screen;
-
-  useEffect(() => {
-    let backListener: { remove: () => void } | null = null;
-
-    const setupBackHandler = async () => {
-      backListener = await CapacitorApp.addListener(
-        'backButton',
-        () => {
-          // If in editor, let NoteEditor handle its own hardware back button
-          // to ensure saving logic runs before screen navigation occurs.
-          if (screenRef.current === 'editor') return;
-
-          handleBackRef.current();
-        }
-      );
-    };
-
-    setupBackHandler();
-
-    return () => {
-      if (backListener) {
-        backListener.remove();
-      }
-    };
-  }, []);
-
-  return (
-    <div
-      className="h-full"
-      style={{ background: 'var(--bg)' }}
-    >
-      {screen === 'home' && (
-        <Home
-          onOpenNote={openNote}
-          onOpenLockFolder={() => setScreen('lock')}
-          onOpenTrash={() => setScreen('trash')}
-          onOpenAccount={() => setScreen('account')}
-          filter={filter}
-          setFilter={setFilter}
-          category={category}
-          setCategory={setCategory}
-        />
-      )}
-
-      {screen === 'editor' && activeNote && (
-        <LockedNoteGuard
-          note={activeNote}
-          onUnlocked={() => setUnlockedNote(true)}
-          onBack={handleBack}
-        >
-          {(unlockedNote || !activeNote.locked) && (
-            <NoteEditor
-              note={activeNote}
-              onBack={handleBack}
-              onSaveContent={saveContent}
-              onUpdate={updateNote}
-              onDelete={deleteNote}
-              onMoveToLockFolder={moveToLockFolder}
-            />
-          )}
-        </LockedNoteGuard>
-      )}
-
-      {screen === 'lock' && (
-        <LockFolder
-          onBack={handleBack}
-          onOpenNote={openNote}
-          authed={lockAuthed}
-          setAuthed={setLockAuthed}
-        />
-      )}
-
-      {screen === 'trash' && (
-        <Trash
-          onBack={handleBack}
-          onOpenNote={openNote}
-        />
-      )}
-
-      {screen === 'account' && (
-        <Account onBack={handleBack} />
-      )}
-    </div>
-  );
-}
+import { useEffect, useState } from 'react';
+import type { Note } from './types';
+import { loadNotes, saveNotes } from './lib/storage';
+import { uid } from './lib/utils';
+import NotesList from './components/NotesList';
+import NoteEditor from './components/NoteEditor';
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setNotes(loadNotes<Note>());
+  }, []);
+
+  useEffect(() => {
+    saveNotes(notes);
+  }, [notes]);
+
+  const openNote = notes.find((n) => n.id === openId) || null;
+
+  const createNote = () => {
+    const n: Note = {
+      id: uid(),
+      title: '',
+      content: '',
+      plain: '',
+      category: 'Work',
+      pinned: false,
+      favorite: false,
+      locked: false,
+      inTrash: false,
+      attachments: [],
+      createdAt: Date.now(),
+      modifiedAt: Date.now(),
+      font: 'Inter, sans-serif',
+      pageColor: '#f8fafc',
+      textColor: '#0f172a',
+    };
+    setNotes((prev) => [n, ...prev]);
+    setOpenId(n.id);
+  };
+
+  const updateNote = (updated: Note) => {
+    setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
+  };
+
+  const togglePin = (id: string) =>
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, pinned: !n.pinned } : n)));
+  const toggleFav = (id: string) =>
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, favorite: !n.favorite } : n)));
+  const trashNote = (id: string) =>
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, inTrash: true } : n)));
+  const restoreNote = (id: string) =>
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, inTrash: false } : n)));
+  const deleteForever = (id: string) =>
+    setNotes((prev) => prev.filter((n) => n.id !== id));
+
+  if (openNote) {
+    return (
+      <NoteEditor
+        note={openNote}
+        onChange={updateNote}
+        onBack={() => setOpenId(null)}
+      />
+    );
+  }
 
   return (
-    <NotesProvider>
-      {showSplash && (
-        <Splash
-          onDone={() => setShowSplash(false)}
-        />
-      )}
-
-      {!showSplash && <AppInner />}
-    </NotesProvider>
+    <div className="fixed inset-0">
+      <NotesList
+        notes={notes}
+        onOpen={setOpenId}
+        onNew={createNote}
+        onTogglePin={togglePin}
+        onToggleFav={toggleFav}
+        onTrash={trashNote}
+        onRestore={restoreNote}
+        onDeleteForever={deleteForever}
+      />
+    </div>
   );
 }

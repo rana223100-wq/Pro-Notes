@@ -1,7 +1,7 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "pro-notes",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,29 +9,20 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@capacitor-firebase/authentication": "^8.3.0",
-    "@capacitor/android": "^8.5.0",
-    "@capacitor/app": "^8.1.1",
-    "@capacitor/cli": "^8.5.0",
-    "@capacitor/core": "^8.5.0",
-    "@capacitor/filesystem": "^8.1.2",
-    "@capacitor/share": "^8.0.1",
-    "@capacitor/filesystem": "^8.1.2",
-    "@capacitor/share": "^8.0.1",
-    "@supabase/supabase-js": "^2.111.0",
-    "firebase": "^12.17.1",
-    "lucide-react": "^1.28.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/filesystem": "^6.0.0",
+    "@capacitor/share": "^6.0.0",
+    "lucide-react": "^0.395.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.3",
-    "@types/node": "^22.20.1",
-    "@types/react": "~19.2.18",
-    "@types/react-dom": "~19.2.4",
-    "@vitejs/plugin-react": "^6.0.5",
-    "tailwindcss": "^4.3.3",
-    "typescript": "^6.0.3",
-    "vite": "^8.2.0"
+    "@capacitor/cli": "^6.0.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1"
   }
 }
