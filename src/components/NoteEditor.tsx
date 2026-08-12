@@ -1,10 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import {
-  ArrowLeft, Star, Pin, MoreVertical, Redo2, Undo2,
-  Bold, Italic, Underline, List, ListOrdered,
-  Image as ImageIcon, Film, File as FileIcon,
-  Trash2, Maximize2, SendToBack, BringToFront,
-} from 'lucide-react';
+import { ArrowLeft, Star, Pin, MoveVertical as MoreVertical, Redo2, Undo2, Bold, Italic, Underline, List, ListOrdered, Image as ImageIcon, Film, File as FileIcon, Trash2, Maximize2, SendToBack, BringToFront } from 'lucide-react';
 import type { Note, NoteAttachment } from '../types';
 import { uid, readFileAsDataUrl } from '../lib/utils';
 import FullscreenViewer from './FullscreenViewer';
